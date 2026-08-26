@@ -13,7 +13,7 @@ export function LoginForm() {
     <label className="grid gap-1 text-sm font-medium">Password<input name="password" type="password" autoComplete="current-password" required className="rounded border px-3 py-2" /></label>
     <div className="grid gap-2"><span className="text-sm font-medium">CAPTCHA</span>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={`/api/captcha?v=${captchaKey}`} alt="CAPTCHA challenge" className="h-16 w-full rounded border bg-zinc-100 object-contain" />
+      <img src={`/api/captcha?v=${captchaKey}-${state.captchaVersion ?? 0}`} alt="CAPTCHA challenge" className="h-16 w-full rounded border bg-zinc-100 object-contain" />
       <button type="button" onClick={() => setCaptchaKey((value) => value + 1)} className="justify-self-start text-sm underline">Get a new CAPTCHA</button>
       <input name="captcha" required autoComplete="off" aria-label="CAPTCHA answer" className="rounded border px-3 py-2" />
     </div>

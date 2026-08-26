@@ -4,7 +4,7 @@ import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 import { signIn } from "@/auth";
 
-export type LoginState = { error?: string };
+export type LoginState = { error?: string; captchaVersion?: number };
 
 export async function loginAction(_state: LoginState, formData: FormData): Promise<LoginState> {
   try {
@@ -12,8 +12,8 @@ export async function loginAction(_state: LoginState, formData: FormData): Promi
   } catch (error) {
     if (error instanceof AuthError) {
       const code = "code" in error ? error.code : undefined;
-      if (code === "invalid_captcha") return { error: "The CAPTCHA was incorrect or expired. Try the new image." };
-      return { error: "Invalid username or password." };
+      if (code === "invalid_captcha") return { error: "The CAPTCHA was incorrect or expired. Try the new image.", captchaVersion: Date.now() };
+      return { error: "Invalid username or password.", captchaVersion: Date.now() };
     }
     throw error;
   }
