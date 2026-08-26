@@ -10,8 +10,8 @@ Use lowercase `snake_case` for database objects and descriptive TypeScript names
 
 ## API patterns
 
-Validate untrusted input on the server. Return generic authentication failures and never log passwords, hashes, CAPTCHA answers, or secrets.
+Validate untrusted input on the server. Return generic authentication failures and never log passwords, hashes, or secrets.
 
 ## Authentication
 
-Auth.js uses signed JWT sessions. Credentials are verified against bcrypt hashes stored in Supabase. CAPTCHA challenges expire after five minutes and are consumed on each attempt.
+Auth.js uses signed JWT sessions. Credentials are verified against bcrypt hashes stored in Supabase.
