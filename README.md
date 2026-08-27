@@ -2,12 +2,12 @@
 
 > **This is an independent hackathon prototype. It is not affiliated with, endorsed by, or connected to the Government of India, GSTN, or the official GST Portal. All data is synthetic/mock.**
 
-A minimal Next.js backend foundation with Supabase Postgres, Auth.js credentials sessions, and bcrypt password hashing. Registration is intentionally not exposed; administrators create users in the backend.
+A Next.js prototype with Supabase Auth and a protected, read-only GST taxpayer master backend. Registration is intentionally not exposed; administrators create users and provision one GSTIN profile per user in the backend.
 
 ## Local setup
 
 1. Create a free Supabase project.
-2. Run `supabase/migrations/001_create_users.sql` in its SQL editor.
+2. Run `supabase/migrations/001_create_users.sql`, then `supabase/migrations/002_create_taxpayer_master.sql`, in its SQL editor.
 3. Copy `.env.example` to `.env.local` and fill in the values. Generate `NEXTAUTH_SECRET` with `openssl rand -base64 32`.
 4. Run `npm run create-user -- demo_admin 'StrongPass!123'` and execute the printed SQL in the Supabase SQL editor.
 5. Run `npm run dev`, then open `http://localhost:3000/login`.
@@ -17,7 +17,7 @@ Usernames are normalized to lowercase and must contain 3–32 lowercase letters,
 ## Supabase connection
 
 1. Create a Supabase project and save its database password somewhere secure.
-2. Open **SQL Editor** in Supabase and run `supabase/migrations/001_create_users.sql`.
+2. Open **SQL Editor** in Supabase and run `supabase/migrations/001_create_users.sql`, then `supabase/migrations/002_create_taxpayer_master.sql`.
 3. Open **Project Settings → API** and copy the project URL, anon key, and service-role key.
 4. Copy `.env.example` to `.env.local` and fill in the Supabase values.
 5. Generate `NEXTAUTH_SECRET` with `openssl rand -base64 32`. Keep `NEXTAUTH_URL=http://localhost:3000` locally.
@@ -25,6 +25,8 @@ Usernames are normalized to lowercase and must contain 3–32 lowercase letters,
 7. Start the app with `npm run dev` and verify login, dashboard protection, page reload, and logout.
 
 The Supabase service-role key is server-only. Never prefix it with `NEXT_PUBLIC_`, expose it to client code, commit it, paste it into chat, or include it in screenshots.
+
+The protected `GET /api/profile` endpoint accepts the logged-in Supabase access token and returns only that user’s GSTIN profile and read-only master data. It masks bank account numbers and signatory contact details before returning them to the browser.
 
 ## ChatGPT Sites deployment
 
