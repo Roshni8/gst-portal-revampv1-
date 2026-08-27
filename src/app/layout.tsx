@@ -12,9 +12,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
         <header className="gst-site-header">
-          <div className="gst-utility-bar">
-            <a className="gst-skip-link" href="#main-content">Skip to main content</a>
-          </div>
           <div className="gst-header-content">
             <Image
               className="gst-emblem"
@@ -37,7 +34,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <span>Made with <span className="gst-footer-heart" aria-label="love">♥</span> in India <span aria-label="India flag">🇮🇳</span></span>
           </div>
           <p className="gst-footer-notice">Site best viewed at 1024 × 768 resolution in Microsoft Edge, Google Chrome 49+, Firefox 45+ and Safari 6+</p>
-          <a className="gst-back-to-top" href="#main-content">Top</a>
         </footer>
       </body>
     </html>
