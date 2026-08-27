@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "gst-prototype",
+  "name": "gst-portal-prototype-india",
   "compatibility_date": "2026-08-27",
   "compatibility_flags": [
     "nodejs_compat"
