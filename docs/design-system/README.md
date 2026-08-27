@@ -1,13 +1,5 @@
-# Design system
+# GST Portal Design System
 
-## Tokens
+The portal-wide rulebook is [GST Portal UX4G Rules](gst-portal-ux4g-rules.md). It governs the shared foundations, components, service patterns, accessibility, content, and responsive behaviour for every page in the prototype.
 
-Placeholder for color, typography, spacing, and motion tokens.
-
-## Components
-
-Placeholder for reusable component and accessibility guidance.
-
-## Patterns
-
-Placeholder for common interaction and content patterns.
+Future token, component, and pattern documentation should follow this rulebook.
