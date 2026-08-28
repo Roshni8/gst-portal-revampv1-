@@ -1148,6 +1148,30 @@ textarea {
 /* Authenticated workspace shell: the compact service bar replaces the public masthead. */
 body:has(.gst-profile-page) .gst-site-header { display: none; }
 
+.gst-profile-skeleton { padding: 2rem 0 3rem; }
+.gst-profile-load-error { padding: 1.25rem; border: 1px solid var(--gst-color-error, #b42318); border-radius: 0.5rem; color: var(--gst-color-error, #b42318); }
+.gst-skeleton-line, .gst-skeleton-tabs span, .gst-skeleton-identity > span, .gst-skeleton-identity i, .gst-skeleton-facts i, .gst-skeleton-facts b, .gst-skeleton-addresses span { display: block; border-radius: 0.35rem; background: linear-gradient(90deg, #eef1f5 25%, #f7f8fa 37%, #eef1f5 63%); background-size: 400% 100%; animation: gst-skeleton-shimmer 1.35s ease infinite; }
+.gst-skeleton-breadcrumb { width: 8rem; height: 0.75rem; margin-bottom: 2rem; }
+.gst-skeleton-title { width: 13rem; height: 2rem; margin-bottom: 0.75rem; }
+.gst-skeleton-subtitle { width: min(30rem, 80%); height: 1rem; margin-bottom: 2rem; }
+.gst-skeleton-tabs { display: flex; gap: 2rem; border-bottom: 1px solid var(--gst-color-border); margin-bottom: 1.5rem; }
+.gst-skeleton-tabs span { width: 9rem; height: 1rem; margin-bottom: 0.9rem; }
+.gst-skeleton-card { padding: 1.5rem; margin-bottom: 1.5rem; border: 1px solid var(--gst-color-border); border-radius: 0.5rem; background: #fff; }
+.gst-skeleton-section-title { width: 11rem; height: 1.25rem; margin-bottom: 1.5rem; }
+.gst-skeleton-identity { display: flex; gap: 1rem; align-items: center; padding-bottom: 1.5rem; border-bottom: 1px solid var(--gst-color-border); }
+.gst-skeleton-identity > span { width: 3.25rem; height: 3.25rem; border-radius: 50%; }
+.gst-skeleton-identity div { flex: 1; display: grid; gap: 0.55rem; }
+.gst-skeleton-identity i:first-child { width: 15rem; max-width: 60%; height: 1.1rem; }
+.gst-skeleton-identity i:last-child { width: 10rem; height: 0.85rem; }
+.gst-skeleton-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; padding-top: 1.5rem; }
+.gst-skeleton-facts span { display: grid; gap: 0.5rem; }
+.gst-skeleton-facts i { width: 5rem; height: 0.7rem; }
+.gst-skeleton-facts b { width: 80%; height: 1rem; }
+.gst-skeleton-addresses { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.gst-skeleton-addresses span { height: 8rem; }
+@keyframes gst-skeleton-shimmer { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+@media (max-width: 700px) { .gst-skeleton-facts, .gst-skeleton-addresses { grid-template-columns: 1fr; } .gst-skeleton-tabs { gap: 1rem; overflow: hidden; } }
+
 .gst-service-nav-inner {
   width: min(100% - 1.5rem, 100%);
   max-width: none;
@@ -1451,6 +1475,16 @@ body:has(.gst-profile-page) .gst-site-header { display: none; }
   height: 3px;
   background: var(--gst-color-on-primary);
   content: "";
+}
+
+.gst-service-nav .gst-nav-chevron {
+  width: 0.875rem;
+  height: 0.875rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.75;
 }
 
 .gst-identity-name .gst-company-verified {

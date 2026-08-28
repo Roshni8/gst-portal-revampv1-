@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
@@ -8,18 +8,6 @@ export function LoginForm() {
   const router = useRouter();
   const [error, setError] = useState<string>();
   const [pending, setPending] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-
-    void getSupabaseBrowserClient().auth.getUser().then(({ data }) => {
-      if (active && data.user) router.replace("/dashboard");
-    });
-
-    return () => {
-      active = false;
-    };
-  }, [router]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
