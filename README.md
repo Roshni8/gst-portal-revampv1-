@@ -7,7 +7,7 @@ A Next.js prototype with Supabase Auth and a protected, read-only GST taxpayer m
 ## Local setup
 
 1. Create a free Supabase project.
-2. Run the numbered files in `supabase/migrations/` in order, from 001 through 007, in the Supabase SQL editor.
+2. Run every numbered file in `supabase/migrations/` in order in the Supabase SQL editor.
 3. Copy `.env.example` to `.env.local` and fill in the values. Generate `NEXTAUTH_SECRET` with `openssl rand -base64 32`.
 4. Run `npm run create-user -- demo_admin 'StrongPass!123'` and execute the printed SQL in the Supabase SQL editor.
 5. Run `npm run dev`, then open `http://localhost:3000/login`.
@@ -17,7 +17,7 @@ Usernames are normalized to lowercase and must contain 3–32 lowercase letters,
 ## Supabase connection
 
 1. Create a Supabase project and save its database password somewhere secure.
-2. Open **SQL Editor** in Supabase and run every numbered file in `supabase/migrations/` in order, from 001 through 007.
+2. Open **SQL Editor** in Supabase and run every numbered file in `supabase/migrations/` in order.
 3. Open **Project Settings → API** and copy the project URL, anon key, and service-role key.
 4. Copy `.env.example` to `.env.local` and fill in the Supabase values.
 5. Generate `NEXTAUTH_SECRET` with `openssl rand -base64 32`. Keep `NEXTAUTH_URL=http://localhost:3000` locally.

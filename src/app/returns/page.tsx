@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { GstServiceNavigation } from "@/components/gst-service-navigation";
+import { PageLoadingSkeleton } from "@/components/page-loading-skeleton";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 type Filing = { return_type: string; tax_period: string; filing_date: string | null; arn: string | null; status: "Filed" | "Not Filed"; due_date: string };
@@ -21,7 +22,10 @@ type ImsDecision = { portal_invoice_id: string; status: "PENDING" | "ACCEPTED" |
 type MatchResult = { portal_invoice_id: string | null; erp_invoice_row_id: string | null; status: string; difference_summary: Record<string, number | boolean> };
 type RecentCheck = { id: string; portal_invoice_id: string | null; erp_invoice_row_id: string | null; counterparty_gstin: string; registration_status: string; remarks: string; checked_at: string };
 type ImsData = { workspace: Workspace; portal_invoices: PortalInvoice[]; decisions: ImsDecision[]; reconciliation_results: MatchResult[]; erp_rows: ErpInvoice[]; recent_counterparty_checks: RecentCheck[]; latest_run: { auto_matched_count: number; exception_count: number } | null };
-type View = "periods" | "tasks" | "outward" | "ims";
+type Gstr3bTax = { taxable_value: number; igst: number; cgst: number; sgst_utgst: number; cess: number };
+type Gstr3bRow = Gstr3bTax & { section: string; ref: string; nature: string; type: "Sale" | "Purchase" };
+type Gstr3bData = { profile: { gstin: string; legal_name: string; trade_name: string | null }; tax_period: string; rows: Gstr3bRow[]; summary: { output_tax: Gstr3bTax; net_itc: Gstr3bTax; reverse_charge: Gstr3bTax; interest: Gstr3bTax; total_payable_in_cash: Gstr3bTax }; generated_from: { outward_documents: number; inward_invoices: number; preparation_rows: number; preparation_ledger_available: boolean } };
+type View = "periods" | "tasks" | "outward" | "ims" | "gstr3b";
 
 const periods = [
   { value: "042026", label: "April", short: "Apr 2026" },
@@ -40,6 +44,7 @@ export default function ReturnsPage() {
   const [data, setData] = useState<ReturnsData>();
   const [outward, setOutward] = useState<OutwardData>();
   const [ims, setIms] = useState<ImsData>();
+  const [gstr3b, setGstr3b] = useState<Gstr3bData>();
   const [view, setView] = useState<View>("periods");
   const [selectedPeriod, setSelectedPeriod] = useState("082026");
   const [filterPeriod, setFilterPeriod] = useState("082026");
@@ -106,6 +111,14 @@ export default function ReturnsPage() {
         sessionStorage.setItem(seededKey, "1");
       }
       await loadReturns(accessToken);
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("view") === "ims") {
+        const imsResponse = await fetch(`/api/returns/ims?taxPeriod=${params.get("taxPeriod") ?? "082026"}`, { headers });
+        if (!imsResponse.ok) throw new Error((await imsResponse.json() as { error?: string }).error ?? "Unable to load IMS.");
+        if (!mounted) return;
+        setIms(await imsResponse.json() as ImsData);
+        setView("ims");
+      }
     })().catch((cause) => { if (mounted) setError(cause instanceof Error ? cause.message : "Unable to load returns."); });
     return () => { mounted = false; };
   }, [loadReturns, router]);
@@ -132,6 +145,13 @@ export default function ReturnsPage() {
     setBusy(true); setError(undefined); setMessage(undefined);
     try { setIms(await (await api(`/api/returns/ims?taxPeriod=${selectedPeriod}`)).json() as ImsData); setView("ims"); }
     catch (cause) { setError(cause instanceof Error ? cause.message : "Unable to load IMS."); }
+    finally { setBusy(false); }
+  }
+
+  async function loadGstr3b() {
+    setBusy(true); setError(undefined); setMessage(undefined);
+    try { setGstr3b(await (await api(`/api/returns/gstr3b?taxPeriod=${selectedPeriod}`)).json() as Gstr3bData); setView("gstr3b"); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : "Unable to load the GSTR-3B computation."); }
     finally { setBusy(false); }
   }
 
@@ -218,7 +238,7 @@ export default function ReturnsPage() {
     finally { setBusy(false); }
   }
 
-  if (!data) return <main className="gst-returns-page"><div className="gst-returns-container"><section className="gst-returns-results"><h1>Loading returns…</h1>{error ? <p className="gst-ims-upload-error">{error}</p> : <p>Preparing database-backed April–August records.</p>}</section></div></main>;
+  if (!data) return error ? <main className="gst-returns-page"><div className="gst-returns-container"><section className="gst-returns-results"><p className="gst-ims-upload-error" role="alert">{error}</p></section></div></main> : <PageLoadingSkeleton variant="returns" />;
 
   return <main id="main-content" className="gst-returns-page">
     <GstServiceNavigation active="returns" company={data.profile.trade_name ?? data.profile.legal_name} gstin={data.profile.gstin} />
@@ -231,13 +251,42 @@ export default function ReturnsPage() {
         <section className="gst-returns-results"><div className="gst-returns-results-head"><div><p>Financial year</p><h2>FY 2026–27</h2></div><span>{rows.length} periods shown</span></div><div className="gst-returns-table-wrap"><table className="gst-returns-table"><thead><tr><th>Month</th><th>GSTR-1</th><th>GSTR-3B</th><th>Due dates</th><th>Action</th></tr></thead><tbody>{rows.map((row) => <tr key={row.value}><th><span>{row.label}</span><small>{row.short}</small></th><td><span className={`gst-return-badge ${row.gstr1?.status === "Filed" ? "is-filed" : "is-not-filed"}`}>{row.gstr1?.status ?? "Not filed"}</span></td><td><span className={`gst-return-badge ${row.gstr3b?.status === "Filed" ? "is-filed" : "is-not-filed"}`}>{row.gstr3b?.status ?? "Not filed"}</span></td><td><small>GSTR-1: {row.gstr1 ? prettyDate(row.gstr1.due_date) : "—"}<br />GSTR-3B: {row.gstr3b ? prettyDate(row.gstr3b.due_date) : "—"}</small></td><td><button className="gst-return-change-period" onClick={() => { setSelectedPeriod(row.value); setView("tasks"); }}>Open</button></td></tr>)}</tbody></table></div></section>
       </> : null}
 
-      {view === "tasks" ? <section className="gst-return-workspace"><header className="gst-return-workspace-head"><div><p>Selected return period</p><h2>{selectedLabel} · FY 2026–27</h2></div><div className="gst-return-form-actions">{selectedPeriod === "082026" ? <button className="gst-return-change-period gst-august-refresh" onClick={refreshAugust} disabled={busy}>↻ Refresh August data</button> : null}<button className="gst-return-change-period" onClick={() => setView("periods")}>Back to returns dashboard</button></div></header><section className="gst-return-form-section"><div className="gst-return-form-heading"><div><p className="gst-return-form-label">Choose a task</p><h3>{selectedPeriod === "082026" ? "August filing workspace" : "Return filing workspace"}</h3><p>Outward supplies and IMS can be completed in either order.</p></div></div><div className="gst-return-task-grid"><article className="gst-return-task gst-return-task-outward"><div><p className="gst-return-task-kicker">GSTR-1 · outward supplies</p><h4>Sales invoices and IRN data</h4><p>Open E-invoice to import IRP data, upload ERP invoices, assign categories and resolve differences.</p></div><Button size="sm" onClick={loadOutward} disabled={busy}>Open outward supplies</Button></article><article className="gst-return-task gst-return-task-ims"><div><p className="gst-return-task-kicker">IMS · inward supplies</p><h4>Portal purchase invoices</h4><p>Review portal purchases, reconcile ERP records and check counterparties.</p></div><Button size="sm" onClick={loadIms} disabled={busy}>Open IMS</Button></article><article className={`gst-return-task gst-return-task-3b ${selectedGstr1?.status === "FILED" && selectedIms?.submitted_at ? "is-available" : "is-locked"}`}><div><p className="gst-return-task-kicker">GSTR-3B</p><h4>Month-end summary</h4><p>{selected3b?.status === "Filed" ? `Filed · ARN ${selected3b.arn}` : selectedGstr1?.status === "FILED" && selectedIms?.submitted_at ? "Finalised GSTR-1 (including HSN) and IMS are ready for GSTR-3B." : "Finalise GSTR-1 and submit IMS first."}</p></div><Button size="sm" disabled={busy || selected3b?.status === "Filed" || selectedGstr1?.status !== "FILED" || !selectedIms?.submitted_at} onClick={fileGstr3b}>{selected3b?.status === "Filed" ? "Filed" : "File GSTR-3B"}</Button></article></div></section></section> : null}
+      {view === "tasks" ? <section className="gst-return-workspace"><header className="gst-return-workspace-head"><div><p>Selected return period</p><h2>{selectedLabel} · FY 2026–27</h2></div><div className="gst-return-form-actions">{selectedPeriod === "082026" ? <button className="gst-return-change-period gst-august-refresh" onClick={refreshAugust} disabled={busy}>↻ Refresh August data</button> : null}<button className="gst-return-change-period" onClick={() => setView("periods")}>Back to returns dashboard</button></div></header><section className="gst-return-form-section"><div className="gst-return-form-heading"><div><p className="gst-return-form-label">Choose a task</p><h3>{selectedPeriod === "082026" ? "August filing workspace" : "Return filing workspace"}</h3><p>Outward supplies and IMS can be completed in either order.</p></div></div><div className="gst-return-task-grid"><article className="gst-return-task gst-return-task-outward"><div><p className="gst-return-task-kicker">GSTR-1 · outward supplies</p><h4>Sales invoices and IRN data</h4><p>Open E-invoice to import IRP data, upload ERP invoices, assign categories and resolve differences.</p></div><Button size="sm" onClick={loadOutward} disabled={busy}>Open outward supplies</Button></article><article className="gst-return-task gst-return-task-ims"><div><p className="gst-return-task-kicker">IMS · inward supplies</p><h4>Portal purchase invoices</h4><p>Review portal purchases, reconcile ERP records and check counterparties.</p></div><Button size="sm" onClick={loadIms} disabled={busy}>Open IMS</Button></article><article className={`gst-return-task gst-return-task-3b ${selectedGstr1?.status === "FILED" && selectedIms?.submitted_at ? "is-available" : "is-locked"}`}><div><p className="gst-return-task-kicker">GSTR-3B</p><h4>Tax computation summary</h4><p>{selected3b?.status === "Filed" ? `Filed · ARN ${selected3b.arn}` : "Review every 3B line, including invoice-derived sales and ITC, before filing."}</p></div><Button size="sm" disabled={busy} onClick={loadGstr3b}>Open GSTR-3B</Button></article></div></section></section> : null}
 
       {view === "outward" && outward ? <OutwardView data={outward} busy={busy} error={error} onImport={importAndDownloadIrn} onUpload={uploadOutward} onFinalise={fileGstr1} /> : null}
       {view === "ims" && ims ? <ImsView data={ims} busy={busy} error={error} onUpload={uploadIms} onDecide={decide} onCounterpartyCheck={checkErpCounterparty} /> : null}
+      {view === "gstr3b" && gstr3b ? <Gstr3bView data={gstr3b} selectedLabel={selectedLabel} busy={busy} canFile={selectedGstr1?.status === "FILED" && Boolean(selectedIms?.submitted_at) && selected3b?.status !== "Filed"} filedArn={selected3b?.status === "Filed" ? selected3b.arn : null} onBack={() => setView("tasks")} onFile={fileGstr3b} /> : null}
     </div>
     <footer className="gst-prototype-footer">Prototype · synthetic data · filing is simulated</footer>
   </main>;
+}
+
+function Gstr3bView({ data, selectedLabel, busy, canFile, filedArn, onBack, onFile }: { data: Gstr3bData; selectedLabel: string; busy: boolean; canFile: boolean; filedArn: string | null; onBack: () => void; onFile: () => void }) {
+  const sectionNames: Record<string, string> = {
+    "3.1": "3.1 — Tax on outward and reverse charge inward supplies",
+    "3.2": "3.2 — Inter-state supplies to unregistered / composition / UIN holders",
+    "4": "4 — Eligible ITC",
+    "5": "5 — Exempt, nil and non-GST inward supplies",
+    "5.1": "5.1 — Interest and late fee for previous tax period",
+  };
+  const sectionOrder = ["3.1", "3.2", "4", "5", "5.1"];
+  const taxCells = (value: Gstr3bTax) => <><td className="gst-money-cell">{money(value.taxable_value)}</td><td className="gst-money-cell">{money(value.igst)}</td><td className="gst-money-cell">{money(value.cgst)}</td><td className="gst-money-cell">{money(value.sgst_utgst)}</td><td className="gst-money-cell">{money(value.cess)}</td></>;
+  const summaryRows = [
+    ["Output tax on outward supplies (offsettable)", data.summary.output_tax],
+    ["Less: Net ITC available", { ...data.summary.net_itc, igst: -data.summary.net_itc.igst, cgst: -data.summary.net_itc.cgst, sgst_utgst: -data.summary.net_itc.sgst_utgst, cess: -data.summary.net_itc.cess }],
+    ["Add: Reverse charge liability (cash only)", data.summary.reverse_charge],
+    ["Add: Interest & late fee", data.summary.interest],
+    ["Total payable in cash", data.summary.total_payable_in_cash],
+  ] as const;
+  return <section className="gst-3b-page">
+    <header className="gst-3b-head">
+      <div><p>GSTR-3B · Monthly summary return</p><h2>Tax computation summary</h2><span>{selectedLabel} · {data.profile.trade_name ?? data.profile.legal_name} · {data.profile.gstin}</span></div>
+      <div><button className="gst-return-change-period" onClick={onBack}>Back to return workspace</button>{filedArn ? <span className="gst-return-badge is-filed">Filed · {filedArn}</span> : <Button size="sm" disabled={busy || !canFile} onClick={onFile}>{canFile ? "File GSTR-3B" : "Complete GSTR-1 & IMS to file"}</Button>}</div>
+    </header>
+    <p className="gst-3b-source-note">{data.generated_from.preparation_ledger_available ? <>Figures are generated for this account only from {data.generated_from.outward_documents} outward invoice records, {data.generated_from.inward_invoices} inward invoice records and {data.generated_from.preparation_rows} saved 3B preparation disclosures.</> : <>Invoice-derived figures are available. Run database migration 009 to load reverse-charge, import, reversal, exempt-inward and interest preparation disclosures.</>}</p>
+    <section className="gst-3b-summary"><h3>Net tax liability</h3><div className="gst-3b-table-wrap"><table className="gst-3b-summary-table"><thead><tr><th>Computation</th><th>Integrated Tax</th><th>Central Tax</th><th>State/UT Tax</th><th>CESS</th></tr></thead><tbody>{summaryRows.map(([label, value], index) => <tr key={label} className={index === summaryRows.length - 1 ? "is-total" : undefined}><th>{label}</th><td>{money(value.igst)}</td><td>{money(value.cgst)}</td><td>{money(value.sgst_utgst)}</td><td>{money(value.cess)}</td></tr>)}</tbody></table></div></section>
+    <section className="gst-3b-lines"><div className="gst-3b-lines-head"><div><h3>Return details</h3><p>Every tax line is shown in one reviewable table before filing.</p></div><span>Invoice amounts are calculated live; preparation-only disclosures are saved per account and period.</span></div><div className="gst-3b-table-wrap"><table className="gst-3b-lines-table"><thead><tr><th>Ref</th><th>Nature of supply</th><th>Type</th><th>Taxable value</th><th>Integrated Tax</th><th>Central Tax</th><th>State/UT Tax</th><th>CESS</th></tr></thead><tbody>{sectionOrder.flatMap((section) => [<tr className="gst-3b-section" key={`${section}-heading`}><th colSpan={8}>{sectionNames[section]}</th></tr>, ...data.rows.filter((row) => row.section === section).map((row, index) => <tr key={`${section}-${row.ref}-${index}`}><th>{row.ref}</th><td>{row.nature}</td><td><span className={`gst-3b-type ${row.type === "Sale" ? "is-sale" : "is-purchase"}`}>{row.type}</span></td>{taxCells(row)}</tr>)])}</tbody></table></div></section>
+  </section>;
 }
 
 const outwardCategories = ["4A, 4B, 6B, 6C - B2B, SEZ, DE Invoices", "5A - B2C (Large) Invoices", "6A - Exports Invoices", "7 - B2C (Others)", "8A, 8B, 8C, 8D - Nil Rated Supplies", "9B - Credit / Debit Notes (Registered)", "9B - Credit / Debit Notes (Unregistered)", "11A(1), 11A(2) - Tax Liability (Advances Received)", "11B(1), 11B(2) - Adjustment of Advances", "12 - HSN-wise summary of outward supplies", "13 - Documents Issued", "14 - Supplies made through ECO", "15 - Supplies U/s 9(5)"] as const;

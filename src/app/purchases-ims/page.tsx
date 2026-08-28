@@ -1,3 +1,3 @@
-import { ServicePlaceholderPage } from "@/components/service-placeholder-page";
+import { redirect } from "next/navigation";
 
-export default function PurchasesImsPage() { return <ServicePlaceholderPage screen="purchases-ims" title="Purchases / IMS" />; }
+export default function PurchasesImsPage() { redirect("/returns?view=ims"); }

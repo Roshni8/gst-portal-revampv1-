@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { GstServiceNavigation, type ServiceScreen } from "@/components/gst-service-navigation";
+import { PageLoadingSkeleton } from "@/components/page-loading-skeleton";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 type Profile = { gstin?: string; legal_name?: string; trade_name?: string | null };
@@ -30,6 +31,6 @@ export function ServicePlaceholderPage({ screen, title }: { screen: ServiceScree
     })().catch(() => router.replace("/login"));
     return () => { mounted = false; };
   }, [router]);
-  if (!profile) return <main className="gst-profile-page" aria-busy="true" />;
+  if (!profile) return <PageLoadingSkeleton />;
   return <main className="gst-profile-page"><GstServiceNavigation active={screen} company={profile.trade_name ?? profile.legal_name ?? "Taxpayer"} gstin={profile.gstin ?? "—"} /><div className="gst-profile-container"><div className="gst-profile-breadcrumb"><span>{title}</span></div><header className="gst-profile-heading"><div><h1>{title}</h1><p>This screen is ready for the next phase of the prototype.</p></div></header></div></main>;
 }

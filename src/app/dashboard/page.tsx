@@ -1,3 +1,3 @@
-import { ServicePlaceholderPage } from "@/components/service-placeholder-page";
+import DashboardClient from "./dashboard-client";
 
-export default function DashboardPage() { return <ServicePlaceholderPage screen="dashboard" title="Dashboard" />; }
+export default function DashboardPage() { return <DashboardClient />; }

@@ -1174,6 +1174,21 @@ body:has(.gst-profile-page) .gst-site-header { display: none; }
 
 .gst-profile-skeleton { padding: 2rem 0 3rem; }
 .gst-profile-load-error { padding: 1.25rem; border: 1px solid var(--gst-color-error, #b42318); border-radius: 0.5rem; color: var(--gst-color-error, #b42318); }
+.gst-page-skeleton { padding: 2rem 0 3rem; }
+.gst-page-skeleton > div, .gst-page-skeleton-panel, .gst-page-skeleton-table-head span, .gst-page-skeleton-row span { border-radius: 0.35rem; background: linear-gradient(90deg, #eef1f5 25%, #f7f8fa 37%, #eef1f5 63%); background-size: 400% 100%; animation: gst-skeleton-shimmer 1.35s ease infinite; }
+.gst-page-skeleton-breadcrumb { width: 8rem; height: 0.75rem; margin-bottom: 2rem; }
+.gst-page-skeleton-title { width: 13rem; height: 2rem; margin-bottom: 0.75rem; }
+.gst-page-skeleton-subtitle { width: min(30rem, 80%); height: 1rem; margin-bottom: 2rem; }
+.gst-page-skeleton-panel { margin-top: 1.5rem; border: 1px solid var(--gst-color-border); background: var(--gst-color-surface); }
+.gst-page-skeleton-controls { display: grid; grid-template-columns: 1.35fr repeat(3, 1fr); gap: 1rem; padding: 1.25rem; }
+.gst-page-skeleton-controls div { height: 2.5rem; }
+.gst-page-skeleton-table { overflow: hidden; }
+.gst-page-skeleton-table-head, .gst-page-skeleton-row { display: grid; grid-template-columns: 1.2fr repeat(3, 1fr); gap: 1rem; padding: 1rem 1.25rem; }
+.gst-page-skeleton-table-head { background: #edf1f3; }
+.gst-page-skeleton-table-head span { height: 0.8rem; }
+.gst-page-skeleton-row { border-top: 1px solid var(--gst-color-border); }
+.gst-page-skeleton-row span { height: 1rem; }
+.gst-page-skeleton--returns { padding-top: 2rem; }
 .gst-skeleton-line, .gst-skeleton-tabs span, .gst-skeleton-identity > span, .gst-skeleton-identity i, .gst-skeleton-facts i, .gst-skeleton-facts b, .gst-skeleton-addresses span { display: block; border-radius: 0.35rem; background: linear-gradient(90deg, #eef1f5 25%, #f7f8fa 37%, #eef1f5 63%); background-size: 400% 100%; animation: gst-skeleton-shimmer 1.35s ease infinite; }
 .gst-skeleton-breadcrumb { width: 8rem; height: 0.75rem; margin-bottom: 2rem; }
 .gst-skeleton-title { width: 13rem; height: 2rem; margin-bottom: 0.75rem; }
@@ -1195,6 +1210,7 @@ body:has(.gst-profile-page) .gst-site-header { display: none; }
 .gst-skeleton-addresses span { height: 8rem; }
 @keyframes gst-skeleton-shimmer { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
 @media (max-width: 700px) { .gst-skeleton-facts, .gst-skeleton-addresses { grid-template-columns: 1fr; } .gst-skeleton-tabs { gap: 1rem; overflow: hidden; } }
+@media (max-width: 700px) { .gst-page-skeleton-controls, .gst-page-skeleton-table-head, .gst-page-skeleton-row { grid-template-columns: 1fr 1fr; } .gst-page-skeleton-controls div:first-child, .gst-page-skeleton-table-head span:first-child, .gst-page-skeleton-row span:first-child { grid-column: 1 / -1; } }
 
 .gst-service-nav-inner {
   width: min(100% - 1.5rem, 100%);
@@ -1491,6 +1507,34 @@ body:has(.gst-profile-page) .gst-site-header { display: none; }
   font-weight: 700;
 }
 
+.gst-service-nav button.is-disabled { cursor: not-allowed; opacity: 0.72; }
+
+.gst-service-nav button.has-tooltip { position: relative; }
+.gst-service-nav button.has-tooltip::before {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 0.5rem);
+  left: 50%;
+  width: max-content;
+  max-width: 16rem;
+  padding: 0.5rem 0.625rem;
+  transform: translateX(-50%);
+  background: #17223c;
+  color: #fff;
+  content: attr(data-tooltip);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.35;
+  opacity: 0;
+  pointer-events: none;
+  text-align: center;
+  transition: opacity 120ms ease;
+  visibility: hidden;
+  white-space: normal;
+}
+.gst-service-nav button.has-tooltip:hover::before,
+.gst-service-nav button.has-tooltip:focus-visible::before { opacity: 1; visibility: visible; }
+
 .gst-service-nav button.is-active::after {
   position: absolute;
   right: 0.75rem;
@@ -1767,6 +1811,48 @@ body:has(.gst-profile-page) .gst-site-header { display: none; }
 /* Returns workspace mock UI. Data bindings will replace the local sample rows. */
 body:has(.gst-returns-page) .gst-site-header { display: none; }
 
+/* Authenticated taxpayer dashboard. */
+body:has(.gst-dashboard-page) .gst-site-header { display: none; }
+.gst-dashboard-page { min-height: 100%; background: var(--gst-color-background); }
+.gst-dashboard-container { width: min(100% - 3rem, 76rem); margin: 0 auto; padding: 1.75rem 0 3.5rem; }
+.gst-dashboard-heading { padding: 1.5rem 0 1.25rem; }
+.gst-dashboard-heading h1, .gst-dashboard-heading p, .gst-dashboard-section h2, .gst-ledger-card h3, .gst-ledger-card p { margin: 0; }
+.gst-dashboard-kicker { color: var(--gst-color-secondary); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.gst-dashboard-heading h1 { margin-top: 0.35rem; font-size: clamp(1.875rem, 3vw, 2.4rem); line-height: 1.2; font-weight: 700; }
+.gst-dashboard-heading div > p:last-child { margin-top: 0.5rem; color: var(--gst-color-text-muted); font-size: 1rem; }
+.gst-dashboard-table-card { overflow: hidden; border: 1px solid var(--gst-color-border); border-radius: 0.5rem; background: var(--gst-color-surface); }
+.gst-dashboard-table-wrap { overflow-x: auto; }
+.gst-dashboard-table { width: 100%; min-width: 62rem; border-collapse: collapse; text-align: left; }
+.gst-dashboard-table th, .gst-dashboard-table td { padding: 1rem 1.125rem; border-bottom: 1px solid var(--gst-color-border); vertical-align: middle; white-space: nowrap; }
+.gst-dashboard-table thead th { background: var(--gst-color-surface-subtle); color: var(--gst-color-text-muted); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; }
+.gst-dashboard-table tbody th { color: var(--gst-color-primary); font-size: 0.9375rem; font-weight: 700; }
+.gst-dashboard-table tbody tr:last-child th, .gst-dashboard-table tbody tr:last-child td { border-bottom: 0; }
+.gst-dashboard-table tbody tr.is-current { background: rgb(44 78 134 / 0.06); }
+.gst-dashboard-total { color: var(--gst-color-primary); font-weight: 700; }
+.gst-dashboard-pill { display: inline-flex; align-items: center; min-height: 1.75rem; padding: 0.2rem 0.625rem; border: 1px solid transparent; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
+.gst-dashboard-pill.is-success { border-color: rgb(60 118 61 / 0.32); background: var(--gst-color-success-surface); color: var(--gst-color-success); }
+.gst-dashboard-pill.is-warning { border-color: rgb(138 90 0 / 0.32); background: var(--gst-color-warning-surface); color: var(--gst-color-warning); }
+.gst-dashboard-pill.is-neutral { background: var(--gst-color-surface-subtle); color: var(--gst-color-text-muted); }
+.gst-dashboard-section { margin-top: 2.25rem; }
+.gst-dashboard-section > h2 { margin-bottom: 0.9rem; font-size: 1.25rem; line-height: 1.35; font-weight: 700; }
+.gst-ledger-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.gst-ledger-card { min-height: 13.75rem; padding: 1.5rem; border: 1px solid var(--gst-color-border); border-radius: 0.5rem; background: var(--gst-color-surface); }
+.gst-ledger-card h3 { color: var(--gst-color-primary); font-size: 1rem; font-weight: 700; }
+.gst-ledger-card strong { display: block; margin-top: 0.85rem; color: var(--gst-color-primary); font-size: clamp(1.75rem, 3vw, 2.25rem); line-height: 1.1; }
+.gst-ledger-card p { margin-top: 0.75rem; color: var(--gst-color-text-muted); font-size: 0.875rem; line-height: 1.55; }
+.gst-ledger-card.is-refund { border-color: #f7c9a9; background: #fff2e7; }
+.gst-ledger-card.is-refund h3, .gst-ledger-card.is-refund strong { color: #b54708; }
+.gst-ledger-card.is-refund p { color: #8a4520; }
+.gst-ledger-card button { min-height: 2.625rem; margin-top: 1rem; padding: 0.55rem 0.9rem; border: 1px solid #b54708; border-radius: 0.25rem; background: #b54708; color: #fff; font: inherit; font-size: 0.875rem; font-weight: 700; }
+.gst-ledger-card button:hover, .gst-ledger-card button:focus-visible { background: #8a3507; }
+.gst-ledger-disclaimer { margin: 0.65rem 0 0; color: var(--gst-color-text-muted); font-size: 0.75rem; }
+.gst-due-table { min-width: 44rem; }
+.gst-due-table tbody th span, .gst-due-table tbody th small { display: block; }
+.gst-due-table tbody th small { margin-top: 0.2rem; color: var(--gst-color-text-muted); font-size: 0.75rem; font-weight: 400; }
+.gst-dashboard-empty { padding: 2rem !important; color: var(--gst-color-text-muted); text-align: center; }
+.gst-dashboard-error { width: min(100% - 3rem, 50rem); margin: 3rem auto; padding: 1rem; border: 1px solid var(--gst-color-error); border-radius: 0.5rem; color: var(--gst-color-error); background: var(--gst-color-surface); }
+@media (max-width: 52rem) { .gst-dashboard-container { width: min(100% - 1.5rem, 100%); padding-top: 1.25rem; } .gst-ledger-grid { grid-template-columns: 1fr; } .gst-ledger-card { min-height: 0; } }
+
 .gst-returns-page { min-height: 100%; background: var(--gst-color-background); }
 
 .gst-returns-container {
@@ -1906,6 +1992,44 @@ body:has(.gst-returns-page) .gst-site-header { display: none; }
   color: var(--gst-color-text-muted);
   opacity: 1;
 }
+
+/* GSTR-3B is a review-first computation: cash liability is visible before the
+   underlying statutory rows, without hiding the tax-head split. */
+.gst-3b-page { display: grid; gap: 1.25rem; margin-top: 1.5rem; }
+.gst-3b-head { display: flex; justify-content: space-between; gap: 1.5rem; align-items: flex-start; padding: 1.25rem; border: 1px solid var(--gst-color-border); background: var(--gst-color-surface); }
+.gst-3b-head p, .gst-3b-head h2, .gst-3b-head span, .gst-3b-summary h3, .gst-3b-lines-head h3, .gst-3b-lines-head p { margin: 0; }
+.gst-3b-head p { color: var(--gst-color-secondary); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.gst-3b-head h2 { margin-top: 0.35rem; font-size: 1.5rem; line-height: 1.25; }
+.gst-3b-head > div:last-child { display: flex; flex: none; flex-wrap: wrap; justify-content: flex-end; gap: 0.75rem; align-items: center; }
+.gst-3b-head > div:first-child > span { display: block; margin-top: 0.35rem; color: var(--gst-color-text-muted); font-size: 0.8125rem; }
+.gst-3b-source-note { margin: 0; padding: 0.875rem 1rem; border: 1px solid #f0c36b; background: var(--gst-color-warning-surface); color: #72501a; font-size: 0.8125rem; line-height: 1.5; }
+.gst-3b-summary, .gst-3b-lines { overflow: hidden; border: 1px solid var(--gst-color-border); background: var(--gst-color-surface); }
+.gst-3b-summary h3 { padding: 0.85rem 1rem; background: var(--gst-color-primary); color: var(--gst-color-on-primary); font-size: 1rem; }
+.gst-3b-table-wrap { overflow-x: auto; }
+.gst-3b-summary-table, .gst-3b-lines-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.gst-3b-summary-table { min-width: 48rem; }
+.gst-3b-summary-table th, .gst-3b-summary-table td, .gst-3b-lines-table th, .gst-3b-lines-table td { padding: 0.75rem; border-right: 1px solid var(--gst-color-border); border-bottom: 1px solid var(--gst-color-border); }
+.gst-3b-summary-table tr > :last-child, .gst-3b-lines-table tr > :last-child { border-right: 0; }
+.gst-3b-summary-table thead th, .gst-3b-lines-table thead th { background: #e8edf0; color: #40454a; font-size: 0.75rem; font-weight: 700; text-align: right; white-space: nowrap; }
+.gst-3b-summary-table thead th:first-child, .gst-3b-lines-table thead th:first-child, .gst-3b-lines-table thead th:nth-child(2), .gst-3b-lines-table thead th:nth-child(3) { text-align: left; }
+.gst-3b-summary-table tbody th { font-size: 0.8125rem; font-weight: 500; text-align: left; }
+.gst-3b-summary-table tbody td { font-size: 0.8125rem; font-weight: 700; text-align: right; }
+.gst-3b-summary-table .is-total th, .gst-3b-summary-table .is-total td { background: #edf3f4; font-weight: 800; }
+.gst-3b-summary-table tbody tr:last-child > *, .gst-3b-lines-table tbody tr:last-child > * { border-bottom: 0; }
+.gst-3b-lines-head { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-end; padding: 1.15rem 1rem; border-bottom: 1px solid var(--gst-color-border); }
+.gst-3b-lines-head h3 { font-size: 1.125rem; }
+.gst-3b-lines-head p, .gst-3b-lines-head > span { margin-top: 0.25rem; color: var(--gst-color-text-muted); font-size: 0.8125rem; line-height: 1.45; }
+.gst-3b-lines-head > span { max-width: 23rem; text-align: right; }
+.gst-3b-lines-table { min-width: 71rem; }
+.gst-3b-lines-table thead th { position: sticky; top: 0; z-index: 1; }
+.gst-3b-lines-table tbody th, .gst-3b-lines-table tbody td { font-size: 0.8125rem; vertical-align: middle; }
+.gst-3b-lines-table tbody th { min-width: 8rem; color: var(--gst-color-text-muted); font-weight: 600; text-align: left; }
+.gst-3b-lines-table tbody td:nth-child(2) { min-width: 26rem; }
+.gst-3b-lines-table tbody td:nth-child(n + 4) { text-align: right; white-space: nowrap; }
+.gst-3b-section th { padding: 0.6rem 0.75rem !important; background: var(--gst-color-primary); color: var(--gst-color-on-primary) !important; font-size: 0.8125rem !important; font-weight: 700 !important; }
+.gst-3b-type { display: inline-flex; min-width: 4.4rem; justify-content: center; padding: 0.2rem 0.45rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
+.gst-3b-type.is-sale { background: #dbe8fb; color: #234d86; }
+.gst-3b-type.is-purchase { background: #cff3ee; color: #076860; }
 
 .gst-invoice-review { overflow: hidden; margin-top: 1.5rem; border: 1px solid var(--gst-color-border); border-radius: 0.5rem; background: var(--gst-color-surface); }
 .gst-invoice-review-head { display: flex; justify-content: space-between; gap: 1.5rem; align-items: flex-start; padding: 1.25rem; border-bottom: 1px solid var(--gst-color-border); }
@@ -2214,4 +2338,7 @@ body:has(.gst-returns-page) .gst-site-header { display: none; }
   .gst-return-task .gst-button,
   .gst-return-complete { margin-top: 0.875rem; }
   .gst-gstr1-finalisation { grid-template-columns: 1fr; }
+  .gst-3b-head, .gst-3b-lines-head { display: block; }
+  .gst-3b-head > div:last-child { justify-content: flex-start; margin-top: 1rem; }
+  .gst-3b-lines-head > span { display: block; max-width: none; text-align: left; }
 }

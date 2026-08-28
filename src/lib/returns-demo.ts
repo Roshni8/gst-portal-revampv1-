@@ -79,7 +79,14 @@ async function seedHistoricalOutward(supabase: SupabaseClient, userId: string) {
 }
 
 async function seedAugust(supabase: SupabaseClient, userId: string) {
-  await supabase.from("gstr1_returns").upsert({ user_id: userId, gstin: TEST_ADMIN_GSTIN, tax_period: "082026", financial_year: "2026-27", status: "DRAFT" }, { onConflict: "user_id,tax_period" });
+  const { data: augustReturn, error: augustReturnError } = await supabase.from("gstr1_returns").upsert({ user_id: userId, gstin: TEST_ADMIN_GSTIN, tax_period: "082026", financial_year: "2026-27", status: "DRAFT" }, { onConflict: "user_id,tax_period" }).select("id").single();
+  if (augustReturnError || !augustReturn) throw new Error("Unable to seed the August GSTR-1 return.");
+  const { error: b2csError } = await supabase.from("gstr1_b2cs_summaries").upsert([
+    { gstr1_return_id: augustReturn.id, is_amendment: false, place_of_supply: "27", supply_type: "INTER_STATE", rate: 18, taxable_value: 62000, igst: 11160, cgst: 0, sgst_utgst: 0, cess: 0 },
+    { gstr1_return_id: augustReturn.id, is_amendment: false, place_of_supply: "06", supply_type: "INTER_STATE", rate: 18, taxable_value: 48500, igst: 8730, cgst: 0, sgst_utgst: 0, cess: 0 },
+    { gstr1_return_id: augustReturn.id, is_amendment: false, place_of_supply: "07", supply_type: "INTER_STATE", rate: 18, taxable_value: 21000, igst: 3780, cgst: 0, sgst_utgst: 0, cess: 0 },
+  ], { onConflict: "gstr1_return_id,is_amendment,place_of_supply,rate,ecommerce_gstin" });
+  if (b2csError) throw new Error("Unable to seed August inter-state B2C supplies.");
 
   const irpRows = Array.from({ length: 6 }, (_, index) => {
     const payload = outwardPayload("082026", index);
@@ -120,6 +127,25 @@ async function seedHistoricalIms(supabase: SupabaseClient, userId: string) {
   if (error) throw new Error("Unable to seed historical IMS submissions.");
 }
 
+async function seedGstr3bAdjustments(supabase: SupabaseClient, userId: string) {
+  // These are the preparation-only disclosures for the demo taxpayer. All
+  // sales and ordinary ITC continue to be calculated from its own invoices.
+  const rows = [
+    { table_ref: "3.1D", taxable_value: 42000, igst: 7560, cgst: 0, sgst_utgst: 0, cess: 0, source_note: "Reverse charge inward supplies" },
+    { table_ref: "4A1", taxable_value: 0, igst: 18200, cgst: 0, sgst_utgst: 0, cess: 0, source_note: "Import of goods" },
+    { table_ref: "4A2", taxable_value: 0, igst: 4500, cgst: 0, sgst_utgst: 0, cess: 0, source_note: "Import of services" },
+    { table_ref: "4A3", taxable_value: 0, igst: 7560, cgst: 0, sgst_utgst: 0, cess: 0, source_note: "Reverse charge ITC" },
+    { table_ref: "4A4", taxable_value: 0, igst: 0, cgst: 0, sgst_utgst: 0, cess: 0, source_note: "ISD credit" },
+    { table_ref: "4B1", taxable_value: 0, igst: 0, cgst: 1200, sgst_utgst: 1200, cess: 0, source_note: "Rule 42/43 reversal" },
+    { table_ref: "4B2", taxable_value: 0, igst: 0, cgst: 0, sgst_utgst: 0, cess: 0, source_note: "Other ITC reversal" },
+    { table_ref: "5_INTER", taxable_value: 18000, igst: 0, cgst: 0, sgst_utgst: 0, cess: 0, source_note: "Inter-state exempt, nil rated and non-GST inward supplies" },
+    { table_ref: "5_INTRA", taxable_value: 52000, igst: 0, cgst: 0, sgst_utgst: 0, cess: 0, source_note: "Intra-state exempt, nil rated and non-GST inward supplies" },
+    { table_ref: "5.1", taxable_value: 0, igst: 0, cgst: 220, sgst_utgst: 220, cess: 0, source_note: "Interest and late fee" },
+  ].map((row) => ({ ...row, user_id: userId, gstin: TEST_ADMIN_GSTIN, tax_period: "082026" }));
+  const { error } = await supabase.from("gstr3b_adjustments").upsert(rows, { onConflict: "user_id,tax_period,table_ref" });
+  if (error) throw new Error("Unable to seed GSTR-3B preparation values.");
+}
+
 async function seedFilingHistory(supabase: SupabaseClient) {
   type HistorySeed = { gstin: string; return_type: string; tax_period: string; filing_date: string | null; arn: string | null; status: string; due_date: string };
   const history: HistorySeed[] = months.flatMap((month, index): HistorySeed[] => [
@@ -141,5 +167,6 @@ export async function provisionTestAdminReturns(supabase: SupabaseClient, userId
   await seedHistoricalOutward(supabase, userId);
   await seedHistoricalIms(supabase, userId);
   await seedAugust(supabase, userId);
+  await seedGstr3bAdjustments(supabase, userId);
   return { provisioned: true };
 }
