@@ -1,0 +1,4 @@
+document_type,document_number,document_date,recipient_gstin,recipient_name,place_of_supply,total_invoice_value,taxable_value,igst,cgst,sgst_utgst,cess
+INVOICE,ARH-202608-001,2026-08-04,27AAGCK5678L1ZP,Kavya Steel Traders Private Limited,27,221840.00,188000.00,33840.00,0.00,0.00,0.00
+INVOICE,ARH-202608-002,2026-08-08,06AAFCN4321M1Z9,Nimbus Retail Solutions Private Limited,06,254290.00,215500.00,38790.00,0.00,0.00,0.00
+INVOICE,ARH-202608-003,2026-08-12,33AAECO9988R1Z2,Orbit Components Limited,33,286740.00,243000.00,43740.00,0.00,0.00,0.00

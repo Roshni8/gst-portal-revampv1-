@@ -1,0 +1,4 @@
+invoice_number,invoice_date,supplier_gstin,supplier_name,place_of_supply,total_invoice_value,hsn_sac_code,rate,taxable_value,igst,cgst,sgst_utgst,cess
+KST-0826-041,2026-08-03,27AAGCK5678L1ZP,Kavya Steel Traders,29,147500.00,8471,18,125000.00,0.00,11250.00,11250.00,0.00
+NRS-0826-118,2026-08-05,06AAFCN4321M1Z9,Nimbus Retail Solutions,29,99120.00,8471,18,84000.00,15120.00,0.00,0.00,0.00
+ORB-0826-077,2026-08-08,33AAECO9988R1Z2,Orbit Components,29,247800.00,8471,18,210000.00,37800.00,0.00,0.00,0.00

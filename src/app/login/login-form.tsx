@@ -35,11 +35,11 @@ export function LoginForm() {
     }
   }
 
-  return <form onSubmit={handleSubmit} className="grid gap-4">
-    <label className="grid gap-1 text-sm font-medium">Username<input name="username" autoComplete="username" pattern="[a-zA-Z0-9._-]{3,32}" title="Use 3 to 32 letters, numbers, dots, underscores, or hyphens." required disabled={pending} className="rounded border-border bg-surface px-3 py-2" /></label>
-    <label className="grid gap-1 text-sm font-medium">Password<input name="password" type="password" autoComplete="current-password" required disabled={pending} className="rounded border-border bg-surface px-3 py-2" /></label>
-    {error ? <p role="alert" className="text-sm text-error">{error}</p> : null}
-    <button disabled={pending} aria-busy={pending} className="rounded bg-primary px-4 py-2 text-on-primary hover:bg-primary-hover disabled:opacity-60">{pending ? "Logging in..." : "Login"}</button>
-    {pending ? <p role="status" className="text-sm text-text-muted">Checking your details and signing you in securely...</p> : null}
+  return <form onSubmit={handleSubmit} className="gst-login-form">
+    <label>Username<input name="username" autoComplete="username" pattern="[a-zA-Z0-9._-]{3,32}" title="Use 3 to 32 letters, numbers, dots, underscores, or hyphens." required disabled={pending} /></label>
+    <label>Password<input name="password" type="password" autoComplete="current-password" required disabled={pending} /></label>
+    {error ? <p role="alert" className="gst-login-error">{error}</p> : null}
+    <button disabled={pending} aria-busy={pending} className="gst-login-submit">{pending ? "Logging in..." : "Login"}</button>
+    {pending ? <p role="status" className="gst-login-pending">Checking your details and signing you in securely...</p> : null}
   </form>;
 }

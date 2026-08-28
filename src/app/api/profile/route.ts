@@ -32,6 +32,7 @@ export async function GET(request: Request) {
 
   if (profileError) return NextResponse.json({ error: "Unable to load the taxpayer profile." }, { status: 500 });
   if (!profile) return NextResponse.json({ error: "No taxpayer profile is configured for this user." }, { status: 404 });
+  if (new URL(request.url).searchParams.get("summary") === "1") return NextResponse.json({ profile });
 
   const [places, signatories, bankAccounts, derivedAttributes, filingHistory, hsnSacCodes] = await Promise.all([
     supabaseAdmin.from("taxpayer_places_of_business").select("*").eq("gstin", profile.gstin).order("address_type"),

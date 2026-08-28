@@ -6,6 +6,14 @@ export async function requireAuthenticatedUser(request: Request) {
 
   if (!token) return null;
 
-  const { data, error } = await getSupabaseAdmin().auth.getUser(token);
-  return error || !data.user ? null : data.user;
+  // getUser() always calls Supabase Auth. getClaims() validates asymmetric JWTs
+  // against the cached JWKS instead, removing an Auth network round-trip from
+  // every database-backed API request.
+  const { data, error } = await getSupabaseAdmin().auth.getClaims(token);
+  const claims = data?.claims;
+  const id = claims?.sub;
+  if (error || !claims || typeof id !== "string") return null;
+
+  const email = claims.email;
+  return { id, email: typeof email === "string" ? email : undefined };
 }

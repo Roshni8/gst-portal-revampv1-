@@ -5,19 +5,19 @@ import type * as React from "react";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex min-h-10 items-center justify-center gap-2 rounded-sm border border-transparent px-4 py-2 text-sm font-bold transition-colors focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "gst-button inline-flex h-10 max-h-10 items-center justify-center gap-2 rounded-sm border border-transparent px-3 py-2 text-sm font-bold transition-colors focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "bg-primary text-on-primary hover:bg-primary-hover",
-        secondary: "bg-secondary text-on-primary hover:bg-primary",
-        outline: "border-primary bg-surface text-primary hover:bg-surface-subtle",
+        default: "gst-button-default bg-primary text-on-primary hover:bg-primary-hover",
+        secondary: "gst-button-secondary bg-secondary text-on-primary hover:bg-primary",
+        outline: "gst-button-outline border-primary bg-surface text-primary hover:bg-surface-subtle",
       },
       size: {
         default: "min-w-28",
-        sm: "min-h-8 min-w-0 px-3 py-1.5 text-xs",
-        lg: "min-h-12 px-5 text-base",
-        icon: "min-h-10 min-w-10 px-2",
+        sm: "min-w-0",
+        lg: "min-w-0",
+        icon: "min-w-10",
       },
     },
     defaultVariants: { variant: "default", size: "default" },
