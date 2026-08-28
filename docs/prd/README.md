@@ -1,9 +1,8 @@
 # Product requirements
 
-## Status
+The canonical GST Flow specification set is indexed at
+[`docs/specifications/README.md`](../specifications/README.md). Start there so
+the final resolution deltas are applied in the correct order.
 
-Placeholder for the product requirements document.
-
-## Scope
-
-Document user problems, goals, non-goals, requirements, and acceptance criteria here.
+The full implementation sequence and completion gates are recorded in
+[`docs/implementation/IMPLEMENTATION_PLAN.md`](../implementation/IMPLEMENTATION_PLAN.md).
