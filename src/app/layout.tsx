@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import "ux4g-web-components/styles.css";
 import "./globals.css";
-import { Ux4gRuntime } from "@/components/ux4g-runtime";
 
 export const metadata: Metadata = {
   title: "GST UX Prototype",
@@ -13,7 +11,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
-        <Ux4gRuntime />
         <header className="gst-site-header">
           <div className="gst-header-content">
             <Image
