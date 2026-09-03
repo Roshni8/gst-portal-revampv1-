@@ -2270,13 +2270,6 @@ body:has(.gst-dashboard-page) .gst-site-header { display: none; }
 .gst-gstr1-group th span { color: var(--gst-color-text-muted); }
 .gst-gstr1-source { color: var(--gst-color-text-muted); font-size: 0.75rem; font-weight: 700; }
 .gst-august-refresh { color: var(--gst-color-warning); border-color: currentColor; }
-.gst-reconciliation-guide { margin-top: 1.25rem; border: 1px solid var(--gst-color-border); background: var(--gst-color-surface); }
-.gst-reconciliation-guide > div:first-child { padding: 1rem 1.25rem; border-bottom: 1px solid var(--gst-color-border); background: var(--gst-color-surface-subtle); }
-.gst-reconciliation-guide h3 { margin: 0.3rem 0 0; font-size: 1rem; }
-.gst-reconciliation-guide-table { border: 0; table-layout: fixed; }
-.gst-reconciliation-guide-table thead th:first-child { width: 13rem !important; }
-.gst-reconciliation-guide-table tbody th { padding: 0.75rem; }
-.gst-reconciliation-guide-table tbody td { padding: 0.75rem; white-space: normal; line-height: 1.45; }
 .gst-gstr1-finalisation { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(16rem, 0.9fr) auto; gap: 1.25rem; align-items: center; margin-top: 1.25rem; padding: 1.25rem; border: 1px solid var(--gst-color-border); background: var(--gst-color-surface-subtle); }
 .gst-gstr1-finalisation h3 { margin: 0.3rem 0; font-size: 1rem; }
 .gst-gstr1-finalisation > div > p:last-child { margin: 0; color: var(--gst-color-text-muted); font-size: 0.8125rem; line-height: 1.45; }
