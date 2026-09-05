@@ -75,11 +75,11 @@ export async function POST(request: Request) {
       { gstin, return_type: "GSTR-3B", tax_period: "072026", filing_date: "2026-08-19", arn: "AA2908260001241", status: "Filed", due_date: "2026-08-20" },
     ]),
     supabaseAdmin.from("taxpayer_hsn_sac_codes").insert([
-      { gstin, code: "8471", description: "Automatic data processing machines", tax_rate: 18, category: "Goods" },
-      { gstin, code: "8517", description: "Telephones and communication equipment", tax_rate: 18, category: "Goods" },
-      { gstin, code: "8528", description: "Monitors and projectors", tax_rate: 28, category: "Goods" },
-      { gstin, code: "9983", description: "Other professional, technical services", tax_rate: 18, category: "Services" },
-      { gstin, code: "9985", description: "Support services", tax_rate: 18, category: "Services" },
+      { gstin, code: "847130", description: "Automatic data processing machines", tax_rate: 18, category: "Goods" },
+      { gstin, code: "851713", description: "Telephones and communication equipment", tax_rate: 18, category: "Goods" },
+      { gstin, code: "852872", description: "Monitors and projectors", tax_rate: 28, category: "Goods" },
+      { gstin, code: "998314", description: "Other professional, technical services", tax_rate: 18, category: "Services" },
+      { gstin, code: "998599", description: "Support services", tax_rate: 18, category: "Services" },
     ]),
   ]);
 

@@ -45,7 +45,7 @@ function outwardPayload(period: string, index: number) {
     recipient_name: party.name,
     place_of_supply: party.state,
     total_document_value: taxable + igst + cgst + sgst_utgst,
-    line: { line_number: 1, hsn_sac_code: index % 2 ? "9983" : "8471", description: index % 2 ? "Technology support services" : "Computer systems", uqc: index % 2 ? "OTH" : "NOS", quantity: index % 2 ? 1 : 4, rate: 18, taxable_value: taxable, igst, cgst, sgst_utgst, cess: 0 },
+    line: { line_number: 1, hsn_sac_code: index % 2 ? "998314" : "847130", description: index % 2 ? "Technology support services" : "Computer systems", uqc: index % 2 ? "OTH" : "NOS", quantity: index % 2 ? 1 : 4, rate: 18, taxable_value: taxable, igst, cgst, sgst_utgst, cess: 0 },
   };
 }
 
@@ -107,7 +107,7 @@ async function seedAugust(supabase: SupabaseClient, userId: string) {
     taxable_value: invoice.taxable,
     tax_value: invoice.igst + invoice.cgst + invoice.sgst,
     total_invoice_value: invoice.taxable + invoice.igst + invoice.cgst + invoice.sgst,
-    hsn_sac_code: "8471",
+    hsn_sac_code: "847130",
     rate: 18,
     igst: invoice.igst,
     cgst: invoice.cgst,
@@ -147,13 +147,13 @@ async function seedGstr3bAdjustments(supabase: SupabaseClient, userId: string) {
 }
 
 async function seedFilingHistory(supabase: SupabaseClient) {
-  type HistorySeed = { gstin: string; return_type: string; tax_period: string; filing_date: string | null; arn: string | null; status: string; due_date: string };
+  type HistorySeed = { gstin: string; return_type: string; tax_period: string; filing_date: string | null; arn: string | null; status: string; due_date: string; tax_paid: number | null; payment_status: "Paid" | "Pending" };
   const history: HistorySeed[] = months.flatMap((month, index): HistorySeed[] => [
-    { gstin: TEST_ADMIN_GSTIN, return_type: "GSTR-1", tax_period: month.period, filing_date: month.filed, arn: `AA29${month.period}G1${index + 1}`, status: "Filed", due_date: month.due1 },
-    { gstin: TEST_ADMIN_GSTIN, return_type: "GSTR-3B", tax_period: month.period, filing_date: month.due3b, arn: `AA29${month.period}3B${index + 1}`, status: "Filed", due_date: month.due3b },
+    { gstin: TEST_ADMIN_GSTIN, return_type: "GSTR-1", tax_period: month.period, filing_date: month.filed, arn: `AA29${month.period}G1${index + 1}`, status: "Filed", due_date: month.due1, tax_paid: null, payment_status: "Pending" },
+    { gstin: TEST_ADMIN_GSTIN, return_type: "GSTR-3B", tax_period: month.period, filing_date: month.due3b, arn: `AA29${month.period}3B${index + 1}`, status: "Filed", due_date: month.due3b, tax_paid: [128450, 142780, 119625, 156340][index], payment_status: "Paid" },
   ]).concat([
-    { gstin: TEST_ADMIN_GSTIN, return_type: "GSTR-1", tax_period: "082026", filing_date: null, arn: null, status: "Not Filed", due_date: "2026-09-11" },
-    { gstin: TEST_ADMIN_GSTIN, return_type: "GSTR-3B", tax_period: "082026", filing_date: null, arn: null, status: "Not Filed", due_date: "2026-09-20" },
+    { gstin: TEST_ADMIN_GSTIN, return_type: "GSTR-1", tax_period: "082026", filing_date: null, arn: null, status: "Not Filed", due_date: "2026-09-11", tax_paid: null, payment_status: "Pending" },
+    { gstin: TEST_ADMIN_GSTIN, return_type: "GSTR-3B", tax_period: "082026", filing_date: null, arn: null, status: "Not Filed", due_date: "2026-09-20", tax_paid: 0, payment_status: "Pending" },
   ]);
   const { error } = await supabase.from("taxpayer_filing_history").upsert(history, { onConflict: "gstin,return_type,tax_period" });
   if (error) throw new Error("Unable to seed April–August filing history.");

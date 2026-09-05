@@ -60,7 +60,7 @@ export function parseImsErpCsv(content: string) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(raw.invoice_date)) { errors.push({ row: sourceRow, message: "Invoice date must use YYYY-MM-DD." }); return; }
     if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z][A-Z][0-9A-Z]$/.test(raw.supplier_gstin.toUpperCase())) { errors.push({ row: sourceRow, message: "Supplier GSTIN must be a valid 15-character GSTIN." }); return; }
     if (!/^\d{2}$/.test(raw.place_of_supply)) { errors.push({ row: sourceRow, message: "Place of supply must be a two-digit state code." }); return; }
-    if (!/^\d{4,8}$/.test(raw.hsn_sac_code)) { errors.push({ row: sourceRow, message: "HSN/SAC must contain 4 to 8 digits." }); return; }
+    if (!/^\d{6}$/.test(raw.hsn_sac_code)) { errors.push({ row: sourceRow, message: "HSN/SAC must contain exactly 6 digits." }); return; }
     if (igst > 0 && (cgst > 0 || sgst > 0)) { errors.push({ row: sourceRow, message: "Use IGST or CGST plus SGST/UTGST, never both." }); return; }
     if (cgst !== sgst) { errors.push({ row: sourceRow, message: "CGST and SGST/UTGST must be equal." }); return; }
     const tax = igst + cgst + sgst + cess;

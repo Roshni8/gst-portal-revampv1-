@@ -13,7 +13,7 @@ user-flow-complete.html — the screen map. Every route in this PRD appears ther
 
 Existing code (do not rebuild): Next.js + Supabase Auth; tables users, taxpayer_profiles, taxpayer_places_of_business, taxpayer_authorised_signatories, taxpayer_bank_accounts, taxpayer_derived_attributes, taxpayer_filing_history, taxpayer_hsn_sac_codes; GET /api/profile (bearer-token validated, service-role reads, masked fields); POST /api/profile/demo provisioner; profile page UI. Reuse this auth/data-access pattern for every new route.
 
-Honesty principle (judged criterion — do not violate): anything mocked is labelled mocked, in the UI, in small grey text. Never present a simulated action as real. The footer strip "Prototype · synthetic data · filing is simulated" appears on every page.
+Honesty principle (judged criterion — do not violate): anything mocked is labelled mocked, in the UI, in small grey text. Never present a simulated action as real. The footer strip "This is a GST Portal redesign prototype, not the actual GST portal. All data is synthetic, and filing information is simulated." appears on every page.
 
 Priorities. P0 = demo breaks without it. P1 = strongly expected. P2 = build only if P0+P1 done.
 
@@ -359,4 +359,3 @@ Error copy pattern: what happened → how to fix → where. Never a bare code.
 All reads/writes go through Next.js API routes with the existing bearer-token + service-role pattern; the browser never holds the service key; RLS stays no-browser-policy.
 4. Definition of done
 Both demo scripts (§1) run end-to-end on a fresh database with only the seed migrations + provisioner, on a 1366×768 window, without touching the file picker, without a console error, and every on-screen number traceable to a table row or a formula in TECHNICAL.md.
-

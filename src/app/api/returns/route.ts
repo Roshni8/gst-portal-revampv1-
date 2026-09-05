@@ -19,4 +19,3 @@ export async function GET(request: Request) {
   if (historyError || returnsError || workspaceError) return NextResponse.json({ error: "Unable to load return periods. Apply migrations 003–006 if this is a new database." }, { status: 500 });
   return NextResponse.json({ profile, filing_history: history ?? [], gstr1_returns: returns ?? [], ims_workspaces: workspaces ?? [] });
 }
-

@@ -154,6 +154,7 @@ begin
       public.normalize_invoice_identifier(document.document_number) as normalized_document_number,
       document.document_date,
       document.recipient_gstin,
+      document.recipient_name,
       document.place_of_supply,
       document.total_document_value,
       coalesce(sum(line.taxable_value), 0) as taxable_value,
@@ -178,6 +179,8 @@ begin
       erp.document_date,
       erp.recipient_gstin as erp_recipient_gstin,
       einvoice.recipient_gstin as einvoice_recipient_gstin,
+      erp.recipient_name as erp_recipient_name,
+      einvoice.recipient_name as einvoice_recipient_name,
       erp.place_of_supply as erp_place_of_supply,
       einvoice.place_of_supply as einvoice_place_of_supply,
       erp.total_invoice_value as erp_total_invoice_value,
@@ -208,6 +211,7 @@ begin
         or abs(erp_sgst_utgst - einvoice_sgst_utgst) > v_tolerance
         or abs(erp_cess - einvoice_cess) > v_tolerance then 'AMOUNT_MISMATCH'::public.invoice_reconciliation_status
       when erp_recipient_gstin is distinct from einvoice_recipient_gstin
+        or lower(btrim(coalesce(erp_recipient_name, ''))) is distinct from lower(btrim(coalesce(einvoice_recipient_name, '')))
         or erp_place_of_supply is distinct from einvoice_place_of_supply then 'FIELD_MISMATCH'::public.invoice_reconciliation_status
       else 'MATCHED'::public.invoice_reconciliation_status
     end,
@@ -222,6 +226,7 @@ begin
       'sgst_utgst_difference', erp_sgst_utgst - einvoice_sgst_utgst,
       'cess_difference', erp_cess - einvoice_cess,
       'recipient_gstin_matches', erp_recipient_gstin is not distinct from einvoice_recipient_gstin,
+      'recipient_name_matches', lower(btrim(coalesce(erp_recipient_name, ''))) is not distinct from lower(btrim(coalesce(einvoice_recipient_name, ''))),
       'place_of_supply_matches', erp_place_of_supply is not distinct from einvoice_place_of_supply
     )
   from paired;

@@ -63,7 +63,7 @@ if state exists AND state.seed_version == SEED_VERSION AND state.seed_name == se
 ## 6. Shared authenticated shell + footer strip — REFACTOR
 
 - Extract the shell from `design-reference/returns-page-design-v2-final.html` into ONE layout component, `components/AppShell.tsx`, applied by the authenticated route-group layout (e.g. `app/(app)/layout.tsx`) so **every** authenticated page — including the existing Profile pages — renders inside it. Delete the profile-local nav; Profile keeps only its in-page tabs.
-- AppShell owns: navy header (company + GSTIN from `/api/profile`, Logout), navy nav (`Dashboard · Returns · Purchases / IMS [badge] · Ledgers · Refunds · Annual Return`; active from the current pathname; badge = live pending-IMS count via a lightweight `/api/ims/badge?period=current`), navy footer, and the **subfoot strip** `Prototype · synthetic data · filing is simulated` — the strip lives in AppShell only, so it is on every page by construction and never duplicated per-page.
+- AppShell owns: navy header (company + GSTIN from `/api/profile`, Logout), navy nav (`Dashboard · Returns · Purchases / IMS [badge] · Ledgers · Refunds · Annual Return`; active from the current pathname; badge = live pending-IMS count via a lightweight `/api/ims/badge?period=current`), navy footer, and the **subfoot strip** `This is a GST Portal redesign prototype, not the actual GST portal. All data is synthetic, and filing information is simulated.` — the strip lives in AppShell only, so it is on every page by construction and never duplicated per-page.
 - `/login` stays outside the group (no shell). Anti-drift check DESIGN.md §7 item 1 now reads: "shell rendered by AppShell, not re-implemented locally."
 
 ---

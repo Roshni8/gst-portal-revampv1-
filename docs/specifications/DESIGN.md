@@ -125,7 +125,7 @@ Spacing: card padding 24–28px; between cards 26px; content `max-width: var(--m
 4. Numbers in sentences are real and computed ("₹4,32,100 across 9 invoices"), never "some invoices".
 5. One idea per sentence; ≤2 sentences per description; sentence case everywhere except the SEARCH button.
 6. Explanations state consequences, not features: "If you do nothing, this becomes your claim" beats "Review pending invoices".
-7. The honesty strip appears once per page (subfoot). Simulated actions additionally say so at the point of action ("filing is simulated").
+7. The honesty strip appears once per page (subfoot). It reads: "This is a GST Portal redesign prototype, not the actual GST portal. All data is synthetic, and filing information is simulated." Simulated actions additionally say so at the point of action ("filing is simulated").
 
 ## 6. Responsive & accessibility floor
 

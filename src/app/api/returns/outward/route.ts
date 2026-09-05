@@ -8,6 +8,11 @@ async function ownedReturn(userId: string, taxPeriod: string) {
   return getSupabaseAdmin().from("gstr1_returns").select("*").eq("user_id", userId).eq("tax_period", taxPeriod).maybeSingle();
 }
 
+const categoryColumnUnavailable = (error: { code?: string; message?: string } | null) =>
+  Boolean(error && (error.code === "PGRST204" || error.message?.includes("gstr1_category")));
+
+const categoryMigrationMessage = "GSTR1 category storage is not ready. Apply database migration 011_gstr1_workspace_actions.sql, then try again.";
+
 export async function GET(request: Request) {
   const user = await requireAuthenticatedUser(request);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -33,11 +38,78 @@ export async function GET(request: Request) {
       if (resultsError) return NextResponse.json({ error: "Unable to load ERP comparison results." }, { status: 500 });
       reconciliationResults = results ?? [];
     }
-    const { data: rows, error: rowsError } = await supabase.from("erp_invoice_rows").select("id,document_number,document_date,recipient_name,recipient_gstin,place_of_supply,total_invoice_value,taxable_value,igst,cgst,sgst_utgst,cess,source_row_number").eq("upload_id", upload.id).order("source_row_number");
+    const rowFields = "id,document_number,document_date,recipient_name,recipient_gstin,place_of_supply,total_invoice_value,taxable_value,igst,cgst,sgst_utgst,cess,source_row_number";
+    const categoryRowsResult = await supabase.from("erp_invoice_rows").select(`${rowFields},gstr1_category`).eq("upload_id", upload.id).order("source_row_number");
+    let rows: unknown[] = categoryRowsResult.data ?? [];
+    let rowsError = categoryRowsResult.error;
+    // ERP is optional and old workspaces may not have migration 011 yet. In
+    // that case, show the ERP invoices with their derived categories rather
+    // than failing the entire GSTR1 page.
+    if (categoryColumnUnavailable(rowsError)) {
+      const fallbackRowsResult = await supabase.from("erp_invoice_rows").select(rowFields).eq("upload_id", upload.id).order("source_row_number");
+      rows = fallbackRowsResult.data ?? [];
+      rowsError = fallbackRowsResult.error;
+    }
     if (rowsError) return NextResponse.json({ error: "Unable to load ERP invoices." }, { status: 500 });
-    erpRows = rows ?? [];
+    erpRows = rows;
   }
   return NextResponse.json({ return: returnRow, documents: documents ?? [], erp_rows: erpRows, irp: irp ?? [], latest_upload: upload ?? null, reconciliation, reconciliation_results: reconciliationResults });
+}
+
+export async function PATCH(request: Request) {
+  const user = await requireAuthenticatedUser(request);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { taxPeriod, source, invoiceId, category, documentNumber, recipientName } = await request.json() as { taxPeriod?: string; source?: "EINVOICE" | "ERP"; invoiceId?: string; category?: string; documentNumber?: string; recipientName?: string | null };
+  if (!taxPeriod || !/^\d{6}$/.test(taxPeriod) || !invoiceId || !["EINVOICE", "ERP"].includes(source ?? "")) return NextResponse.json({ error: "A valid invoice, source and tax period are required." }, { status: 400 });
+  if (category !== undefined && typeof category !== "string") return NextResponse.json({ error: "Category must be text." }, { status: 400 });
+  const supabase = getSupabaseAdmin();
+  const { data: returnRow, error: returnError } = await ownedReturn(user.id, taxPeriod);
+  if (returnError || !returnRow) return NextResponse.json({ error: "GSTR-1 return not found." }, { status: 404 });
+  if (returnRow.status === "FILED") return NextResponse.json({ error: "A filed return cannot be changed." }, { status: 409 });
+  const values = { ...(category !== undefined ? { gstr1_category: category || null } : {}), ...(documentNumber !== undefined ? { document_number: documentNumber.trim() } : {}), ...(recipientName !== undefined ? { recipient_name: recipientName?.trim() || null } : {}) };
+  if (!Object.keys(values).length) return NextResponse.json({ error: "Choose a value to update." }, { status: 400 });
+  if (source === "EINVOICE") {
+    const { data: current, error: currentError } = await supabase.from("gstr1_documents").select("document_number,recipient_name").eq("id", invoiceId).eq("gstr1_return_id", returnRow.id).maybeSingle();
+    if (currentError) return NextResponse.json({ error: "Unable to load the E-invoice." }, { status: 500 });
+    if (!current) return NextResponse.json({ error: "E-invoice not found." }, { status: 404 });
+    const contentChanged = (documentNumber !== undefined && documentNumber.trim() !== current.document_number) || (recipientName !== undefined && (recipientName?.trim() || null) !== current.recipient_name);
+    const { data, error } = await supabase.from("gstr1_documents").update({ ...values, ...(contentChanged ? { is_irp_edited: true } : {}) }).eq("id", invoiceId).eq("gstr1_return_id", returnRow.id).select("id").maybeSingle();
+    if (category !== undefined && categoryColumnUnavailable(error)) return NextResponse.json({ error: categoryMigrationMessage }, { status: 409 });
+    if (error) return NextResponse.json({ error: "Unable to update the E-invoice." }, { status: 500 });
+    if (!data) return NextResponse.json({ error: "E-invoice not found." }, { status: 404 });
+  } else {
+    const { data: row } = await supabase.from("erp_invoice_rows").select("id,erp_invoice_uploads!inner(gstr1_return_id)").eq("id", invoiceId).maybeSingle();
+    const upload = row?.erp_invoice_uploads?.[0];
+    if (!row || !upload || upload.gstr1_return_id !== returnRow.id) return NextResponse.json({ error: "ERP invoice not found." }, { status: 404 });
+    const { error } = await supabase.from("erp_invoice_rows").update(values).eq("id", invoiceId);
+    if (category !== undefined && categoryColumnUnavailable(error)) return NextResponse.json({ error: categoryMigrationMessage }, { status: 409 });
+    if (error) return NextResponse.json({ error: "Unable to update the ERP invoice." }, { status: 500 });
+  }
+  return NextResponse.json({ updated: true });
+}
+
+export async function DELETE(request: Request) {
+  const user = await requireAuthenticatedUser(request);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { taxPeriod, source, invoiceId } = await request.json() as { taxPeriod?: string; source?: "EINVOICE" | "ERP"; invoiceId?: string };
+  if (!taxPeriod || !/^\d{6}$/.test(taxPeriod) || !invoiceId || !["EINVOICE", "ERP"].includes(source ?? "")) return NextResponse.json({ error: "A valid invoice, source and tax period are required." }, { status: 400 });
+  const supabase = getSupabaseAdmin();
+  const { data: returnRow, error: returnError } = await ownedReturn(user.id, taxPeriod);
+  if (returnError || !returnRow) return NextResponse.json({ error: "GSTR-1 return not found." }, { status: 404 });
+  if (returnRow.status === "FILED") return NextResponse.json({ error: "A filed return cannot be changed." }, { status: 409 });
+  if (source === "EINVOICE") {
+    const { data: document, error } = await supabase.from("gstr1_documents").update({ record_status: "DELETED" }).eq("id", invoiceId).eq("gstr1_return_id", returnRow.id).select("id,irn").maybeSingle();
+    if (error || !document) return NextResponse.json({ error: "E-invoice not found." }, { status: 404 });
+    if (document.irn) await supabase.from("irp_einvoices").update({ imported_gstr1_document_id: null }).eq("user_id", user.id).eq("period", taxPeriod).eq("irn", document.irn);
+  } else {
+    const { data: row } = await supabase.from("erp_invoice_rows").select("id,upload_id,erp_invoice_uploads!inner(gstr1_return_id)").eq("id", invoiceId).maybeSingle();
+    const upload = row?.erp_invoice_uploads?.[0];
+    if (!row || !upload || upload.gstr1_return_id !== returnRow.id) return NextResponse.json({ error: "ERP invoice not found." }, { status: 404 });
+    const { error } = await supabase.from("erp_invoice_rows").delete().eq("id", row.id);
+    if (error) return NextResponse.json({ error: "Unable to remove the ERP invoice." }, { status: 500 });
+    await supabase.rpc("reconcile_erp_invoice_upload", { p_upload_id: row.upload_id });
+  }
+  return NextResponse.json({ removed: true });
 }
 
 export async function POST(request: Request) {
